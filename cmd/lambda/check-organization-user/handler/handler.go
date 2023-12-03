@@ -12,12 +12,15 @@ import (
 
 type LambdaHandler struct {
 	Serv          domain.IGrafanaService
-	Logger        *logrus.Logger
+	AuditServ     domain.IAuditService
 	ExceptionServ domain.IExceptionService
+	Logger        *logrus.Logger
 }
 
 func (h LambdaHandler) HandleRequest(ctx context.Context, req common.ProxyRequest) (resp common.ProxyResponse, err error) {
 	defer h.exceptionHandler(ctx, &resp)
+
+	_ = h.AuditServ.SaveAudit(ctx, model.AuditDTO{Method: req.HTTPMethod, Path: req.Path, Payload: req.String()})
 
 	request := model.CheckOrgUserRequest{
 		OrgName:   req.QueryStringParameters["org"],

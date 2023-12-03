@@ -8,6 +8,7 @@ import (
 	"grafana-api/domain"
 	"grafana-api/infrastructure/event/sns"
 	"grafana-api/infrastructure/http/grafana"
+	"grafana-api/infrastructure/persistence/timestream"
 	"grafana-api/infrastructure/secretmanager"
 )
 
@@ -20,10 +21,14 @@ func init() {
 	secret := secretmanager.Init()
 
 	client := grafana.NewClient(secret.GrafanaClient)
+
 	publisher := sns.NewEventPublisher(secret.ErrorTopic)
+
+	auditRepo := timestream.NewAuditRepository(secret.TimeStreamDB)
 
 	lambdaHandler.Serv = domain.NewGrafanaService(client, lambdaHandler.Logger)
 	lambdaHandler.ExceptionServ = domain.NewExceptionService(publisher, lambdaHandler.Logger)
+	lambdaHandler.AuditServ = domain.NewAuditService(auditRepo, lambdaHandler.Logger)
 }
 
 func main() {
