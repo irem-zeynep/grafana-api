@@ -15,12 +15,13 @@ unit_coverage.out
 
 ### Terraform
 .deploy/.terraform/
-.deploy/.*.tfstate
-.deploy/.*.tfstate.*
+
 .deploy/terraform.tfstate
 .deploy/terraform.tfstate.backup
+
 .deploy/*.tfvars
 .deploy/*.tfvars.json
+
 .deploy/override.tf
 .deploy/override.tf.json
 .deploy/*_override.tf
