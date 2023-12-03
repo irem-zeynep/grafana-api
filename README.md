@@ -5,7 +5,7 @@ Includes simple AWS API Gateway, Lambda Function which interacts with original G
 
 ## Required Secrets
 
-Grafana Client
+Grafana Client (`grafana/stage/grafanaclient`)
 ```json
 {
   "apiKey": "<grafana-api-key>",
@@ -13,14 +13,14 @@ Grafana Client
 }
 ```
 
-SNS
+SNS (`grafana/stage/errortopic`)
 ```json
 {
   "topicName": "<sns-error-topic-name>"
 }
 ```
 
-TimeStream Table
+TimeStream Table (`grafana/stage/timestreamdb`)
 ```json
 {
   "dbName": "<terraform-db-name>",
@@ -35,7 +35,14 @@ export TF_VAR_aws_secret_key=<secret_key_value>
 export TF_VAR_aws_region=<region>         
 ```
 
-## Enable Pre-commit Hook
+## Additional Tips
+
+- Installed and run Grafana instance on ec2 instance
+- Created SNS topic and timeStream DB
+- Used SQS to monitor SNS events
+- Monitored logs with CloudWatch
+
+### Enable Pre-commit Hook
 
 Install pre-commit
 ``` shell
@@ -52,12 +59,7 @@ Enable pre-commit
 make precommit-install
 ```
 
-## Create Mock files for unit testing
+### Create mocks for unit testing
 ``` shell
 make generate-mocks
 ```
-
-## Tips
-
-- Installed and run grafana instance on ec2 instance
-- Used SQS to monitor SNS events
