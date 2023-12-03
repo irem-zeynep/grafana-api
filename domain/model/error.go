@@ -5,6 +5,8 @@ type ErrorCode string
 const (
 	NotFoundCode          ErrorCode = "domain.not-found.error"
 	StatusFailedErrorCode ErrorCode = "client.status-not-success.error"
+	MissingOrgParam       ErrorCode = "validation.missing-required-param-org.error"
+	MissingEmailParam     ErrorCode = "validation.missing-required-param-email.error"
 )
 
 type ErrorType string
