@@ -11,7 +11,7 @@ type CheckOrgUserRequest struct {
 
 func (r CheckOrgUserRequest) Validate() error {
 	if r.OrgName == "" {
-		return ApplicationError{
+		return &ApplicationError{
 			Instant: time.Now().String(),
 			Code:    MissingOrgParam,
 			Type:    ValidationError,
@@ -19,7 +19,7 @@ func (r CheckOrgUserRequest) Validate() error {
 	}
 
 	if r.UserEmail == "" {
-		return ApplicationError{
+		return &ApplicationError{
 			Instant: time.Now().String(),
 			Code:    MissingEmailParam,
 			Type:    ValidationError,

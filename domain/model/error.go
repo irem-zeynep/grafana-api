@@ -24,6 +24,6 @@ type ApplicationError struct {
 	Cause   string    `json:"-"`
 }
 
-func (e ApplicationError) Error() string {
+func (e *ApplicationError) Error() string {
 	return string(e.Code)
 }
