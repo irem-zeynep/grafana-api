@@ -6,6 +6,7 @@ import (
 	_ "github.com/valyala/fasthttp"
 	"grafana-api/cmd/lambda/check-organization-user/handler"
 	"grafana-api/domain"
+	"grafana-api/infrastructure/event/sns"
 	"grafana-api/infrastructure/http/grafana"
 	"grafana-api/infrastructure/secretmanager"
 )
@@ -19,8 +20,10 @@ func init() {
 	secret := secretmanager.Init()
 
 	client := grafana.NewClient(secret.GrafanaClient)
-	lambdaHandler.Serv = domain.NewGrafanaService(client, lambdaHandler.Logger)
+	publisher := sns.NewEventPublisher(secret.ErrorTopic)
 
+	lambdaHandler.Serv = domain.NewGrafanaService(client, lambdaHandler.Logger)
+	lambdaHandler.ExceptionServ = domain.NewExceptionService(publisher, lambdaHandler.Logger)
 }
 
 func main() {

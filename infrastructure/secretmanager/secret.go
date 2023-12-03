@@ -7,18 +7,12 @@ import (
 
 type Secret struct {
 	GrafanaClient ClientSecret
-	TimeStreamDB  DBSecret
 	ErrorTopic    TopicSecret
 }
 
 type ClientSecret struct {
 	Host   string `json:"host"`
 	APIKey string `json:"apiKey"`
-}
-
-type DBSecret struct {
-	DBName    string `json:"dbName"`
-	TableName string `json:"tableName"`
 }
 
 type TopicSecret struct {
@@ -48,8 +42,12 @@ func Init() *Secret {
 	clientSecret := ClientSecret{}
 	manager.mapSecret(grafanaClientSecretName, &clientSecret)
 
+	errorTopicSecret := TopicSecret{}
+	manager.mapSecret(errorTopicSecretName, &errorTopicSecret)
+
 	return &Secret{
 		GrafanaClient: clientSecret,
+		ErrorTopic:    errorTopicSecret,
 	}
 }
 
