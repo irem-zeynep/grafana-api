@@ -38,7 +38,7 @@ func (c *client) GetOrg(ctx context.Context, name string) (*OrganizationDTO, err
 	}
 
 	if common.IsFailure(r.Response) {
-		return nil, common.NewErrorResponse(r.Response)
+		return nil, common.NewErrorResponse(r.Response, "get-org")
 	}
 
 	orgDTO := OrganizationDTO{}
@@ -63,7 +63,7 @@ func (c *client) GetUser(ctx context.Context, name string) (*UserDTO, error) {
 	}
 
 	if common.IsFailure(r.Response) {
-		return nil, common.NewErrorResponse(r.Response)
+		return nil, common.NewErrorResponse(r.Response, "get-user")
 	}
 
 	userDTO := UserDTO{}
@@ -94,7 +94,7 @@ func (c *client) CreateUser(ctx context.Context, cmd CreateUserCommand) error {
 	}
 
 	if common.IsFailure(r.Response) {
-		return common.NewErrorResponse(r.Response)
+		return common.NewErrorResponse(r.Response, "create-user")
 	}
 
 	return nil

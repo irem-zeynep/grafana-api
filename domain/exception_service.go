@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"github.com/sirupsen/logrus"
 	"grafana-api/infrastructure/event/sns"
 )
@@ -20,6 +21,10 @@ func NewExceptionService(publisher sns.IEventPublisher, logger *logrus.Logger) I
 }
 
 func (s exceptionService) SaveException(ctx context.Context, exceptionMsg string) error {
+	if exceptionMsg == "" {
+		return errors.New("exception message can not be empty")
+	}
+
 	s.logger.Info("Going to send error message")
 	if err := s.publisher.SendMessage(ctx, exceptionMsg); err != nil {
 		s.logger.Errorf("Could not send error message: %s because: %v", exceptionMsg, err)

@@ -8,7 +8,7 @@ import (
 )
 
 type IGrafanaService interface {
-	CheckOrganizationUser(ctx context.Context, cmd model.CheckOrgUserRequest) error
+	CheckOrganizationUser(ctx context.Context, req model.CheckOrgUserRequest) (*model.CheckOrgUserDTO, error)
 }
 
 type grafanaService struct {
@@ -23,25 +23,25 @@ func NewGrafanaService(client grafana.IClient, logger *logrus.Logger) IGrafanaSe
 	}
 }
 
-func (s grafanaService) CheckOrganizationUser(ctx context.Context, req model.CheckOrgUserRequest) error {
+func (s grafanaService) CheckOrganizationUser(ctx context.Context, req model.CheckOrgUserRequest) (*model.CheckOrgUserDTO, error) {
 	if err := req.Validate(); err != nil {
-		return err
+		return nil, err
 	}
 
 	s.logger.Infof("Sending request to grafana for organization: %s", req.OrgName)
 	_, err := s.client.GetOrg(ctx, req.OrgName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	s.logger.Infof("Sending request to grafana for user: %s", req.UserEmail)
 	_, err = s.client.GetUser(ctx, req.UserEmail)
 	if err == nil {
-		return nil
+		return &model.CheckOrgUserDTO{NewUserCreated: false}, nil
 	}
 
 	if err.Error() != string(model.NotFoundCode) {
-		return err
+		return nil, err
 	}
 
 	s.logger.Infof("Sending request to grafana to create user: %s", req.UserEmail)
@@ -53,9 +53,13 @@ func (s grafanaService) CheckOrganizationUser(ctx context.Context, req model.Che
 		Role:     "Viewer",
 	}
 	if err = s.client.CreateUser(ctx, userCmd); err != nil {
-		return err
+		return nil, err
 	}
 	s.logger.Infof("Successfully created new user: %s", req.UserEmail)
 
-	return nil
+	return &model.CheckOrgUserDTO{
+		NewUserCreated: true,
+		Email:          userCmd.Email,
+		Password:       userCmd.Password,
+	}, nil
 }

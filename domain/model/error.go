@@ -3,7 +3,7 @@ package model
 type ErrorCode string
 
 const (
-	NotFoundCode          ErrorCode = "domain.not-found.error"
+	NotFoundCode          ErrorCode = "not-found.%s.error"
 	StatusFailedErrorCode ErrorCode = "client.status-not-success.error"
 	MissingOrgParam       ErrorCode = "validation.missing-required-param-org.error"
 	MissingEmailParam     ErrorCode = "validation.missing-required-param-email.error"
@@ -20,7 +20,7 @@ const (
 type ApplicationError struct {
 	Instant string    `json:"instant,omitempty"`
 	Type    ErrorType `json:"statusCode,omitempty"`
-	Code    ErrorCode `json:"code,omitempty"`
+	Code    string    `json:"code,omitempty"`
 	Cause   string    `json:"-"`
 }
 

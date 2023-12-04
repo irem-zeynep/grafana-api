@@ -52,9 +52,11 @@ func (suite *HandlerSuite) TestHandleRequest() {
 		UserEmail: "test email",
 	}
 
+	dto := &model.CheckOrgUserDTO{NewUserCreated: false}
+
 	auditDto := model.AuditDTO{Method: "GET", Path: "/test", Payload: proxyReq.String()}
 	suite.auditServ.On("SaveAudit", ctx, auditDto).Return(nil)
-	suite.serv.On("CheckOrganizationUser", ctx, req).Return(nil)
+	suite.serv.On("CheckOrganizationUser", ctx, req).Return(dto, nil)
 
 	//when
 	resp, err := suite.handler.HandleRequest(ctx, proxyReq)
@@ -80,11 +82,12 @@ func (suite *HandlerSuite) TestHandleRequest_IgnoreErrorWhileSavingAudit() {
 		OrgName:   "test org",
 		UserEmail: "test email",
 	}
+	dto := &model.CheckOrgUserDTO{NewUserCreated: false}
 
 	expectedErr := errors.New("audit err")
 	auditDto := model.AuditDTO{Method: "GET", Path: "/test", Payload: proxyReq.String()}
 	suite.auditServ.On("SaveAudit", ctx, auditDto).Return(expectedErr)
-	suite.serv.On("CheckOrganizationUser", ctx, req).Return(nil)
+	suite.serv.On("CheckOrganizationUser", ctx, req).Return(dto, nil)
 
 	//when
 	resp, err := suite.handler.HandleRequest(ctx, proxyReq)
@@ -113,11 +116,11 @@ func (suite *HandlerSuite) TestHandleRequest_NotFoundError() {
 
 	appErr := &model.ApplicationError{
 		Type: model.NotFoundError,
-		Code: model.NotFoundCode,
+		Code: string(model.NotFoundCode),
 	}
 	auditDto := model.AuditDTO{Method: "GET", Path: "/test", Payload: proxyReq.String()}
 	suite.auditServ.On("SaveAudit", ctx, auditDto).Return(nil)
-	suite.serv.On("CheckOrganizationUser", ctx, req).Return(appErr)
+	suite.serv.On("CheckOrganizationUser", ctx, req).Return(nil, appErr)
 
 	//when
 	resp, err := suite.handler.HandleRequest(ctx, proxyReq)
@@ -146,11 +149,11 @@ func (suite *HandlerSuite) TestHandleRequest_UnexpectedError() {
 
 	appErr := &model.ApplicationError{
 		Type: model.InternalError,
-		Code: model.StatusFailedErrorCode,
+		Code: string(model.StatusFailedErrorCode),
 	}
 	auditDto := model.AuditDTO{Method: "GET", Path: "/test", Payload: proxyReq.String()}
 	suite.auditServ.On("SaveAudit", ctx, auditDto).Return(nil)
-	suite.serv.On("CheckOrganizationUser", ctx, req).Return(appErr)
+	suite.serv.On("CheckOrganizationUser", ctx, req).Return(nil, appErr)
 	suite.exServ.On("SaveException", ctx, "{\"code\":\"client.status-not-success.error\"}").Return(appErr)
 
 	//when
@@ -180,13 +183,13 @@ func (suite *HandlerSuite) TestHandleRequest_IgnoreErrorWhileSavingException() {
 
 	appErr := &model.ApplicationError{
 		Type: model.InternalError,
-		Code: model.StatusFailedErrorCode,
+		Code: string(model.StatusFailedErrorCode),
 	}
 	auditDto := model.AuditDTO{Method: "GET", Path: "/test", Payload: proxyReq.String()}
 
 	expectedErr := errors.New("exception saving error")
 	suite.auditServ.On("SaveAudit", ctx, auditDto).Return(nil)
-	suite.serv.On("CheckOrganizationUser", ctx, req).Return(appErr)
+	suite.serv.On("CheckOrganizationUser", ctx, req).Return(nil, appErr)
 	suite.exServ.On("SaveException", ctx, "{\"code\":\"client.status-not-success.error\"}").Return(expectedErr)
 
 	//when

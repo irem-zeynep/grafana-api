@@ -52,10 +52,17 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana() {
 	suite.client.On("CreateUser", ctx, cmd).Return(nil)
 
 	//when
-	err := suite.serv.CheckOrganizationUser(ctx, req)
+	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)
 
 	//then
+	expectedResp := &model.CheckOrgUserDTO{
+		NewUserCreated: true,
+		Email:          cmd.Email,
+		Password:       cmd.Password,
+	}
+
 	assert.Nil(suite.T(), err)
+	assert.Equal(suite.T(), expectedResp, actualResp)
 }
 
 func (suite *GrafanaServiceSuite) TestSaveGrafana_ErrorWhileCreatingNewUser() {
@@ -86,10 +93,11 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana_ErrorWhileCreatingNewUser() {
 	suite.client.On("CreateUser", ctx, cmd).Return(expectedErr)
 
 	//when
-	err := suite.serv.CheckOrganizationUser(ctx, req)
+	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)
 
 	//then
 	assert.Equal(suite.T(), expectedErr, err)
+	assert.Nil(suite.T(), actualResp)
 }
 
 func (suite *GrafanaServiceSuite) TestSaveGrafana_UserExists() {
@@ -115,10 +123,15 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana_UserExists() {
 	suite.client.On("GetUser", ctx, "test user email").Return(userDto, nil)
 
 	//when
-	err := suite.serv.CheckOrganizationUser(ctx, req)
+	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)
 
 	//then
+	expectedResp := &model.CheckOrgUserDTO{
+		NewUserCreated: false,
+	}
+
 	assert.Nil(suite.T(), err)
+	assert.Equal(suite.T(), expectedResp, actualResp)
 }
 
 func (suite *GrafanaServiceSuite) TestSaveGrafana_ErrorWhileGettingUser() {
@@ -140,10 +153,11 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana_ErrorWhileGettingUser() {
 	suite.client.On("GetUser", ctx, "test user email").Return(nil, expectedErr)
 
 	//when
-	err := suite.serv.CheckOrganizationUser(ctx, req)
+	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)
 
 	//then
 	assert.Equal(suite.T(), expectedErr, err)
+	assert.Nil(suite.T(), actualResp)
 }
 
 func (suite *GrafanaServiceSuite) TestSaveGrafana_ErrorWhileGettingOrg() {
@@ -159,10 +173,11 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana_ErrorWhileGettingOrg() {
 	suite.client.On("GetOrg", ctx, "test org name").Return(nil, expectedErr)
 
 	//when
-	err := suite.serv.CheckOrganizationUser(ctx, req)
+	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)
 
 	//then
 	assert.Equal(suite.T(), expectedErr, err)
+	assert.Nil(suite.T(), actualResp)
 }
 
 func (suite *GrafanaServiceSuite) TestSaveGrafana_UserEmailEmpty() {
@@ -173,10 +188,11 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana_UserEmailEmpty() {
 	}
 
 	//when
-	err := suite.serv.CheckOrganizationUser(ctx, req)
+	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)
 
 	//then
 	assert.Equal(suite.T(), string(model.MissingEmailParam), err.Error())
+	assert.Nil(suite.T(), actualResp)
 }
 
 func (suite *GrafanaServiceSuite) TestSaveGrafana_OrgNameEmpty() {
@@ -187,10 +203,11 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana_OrgNameEmpty() {
 	}
 
 	//when
-	err := suite.serv.CheckOrganizationUser(ctx, req)
+	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)
 
 	//then
 	assert.Equal(suite.T(), string(model.MissingOrgParam), err.Error())
+	assert.Nil(suite.T(), actualResp)
 }
 
 func TestGrafanaServiceSuite(t *testing.T) {

@@ -13,7 +13,7 @@ func (r CheckOrgUserRequest) Validate() error {
 	if r.OrgName == "" {
 		return &ApplicationError{
 			Instant: time.Now().String(),
-			Code:    MissingOrgParam,
+			Code:    string(MissingOrgParam),
 			Type:    ValidationError,
 		}
 	}
@@ -21,7 +21,7 @@ func (r CheckOrgUserRequest) Validate() error {
 	if r.UserEmail == "" {
 		return &ApplicationError{
 			Instant: time.Now().String(),
-			Code:    MissingEmailParam,
+			Code:    string(MissingEmailParam),
 			Type:    ValidationError,
 		}
 	}

@@ -37,6 +37,15 @@ func (suite *ExceptionServiceSuite) TestSaveException() {
 	assert.Nil(suite.T(), err)
 }
 
+func (suite *ExceptionServiceSuite) TestSaveException_ErrorWhenEmptyMessage() {
+	//given
+	//when
+	err := suite.serv.SaveException(context.TODO(), "")
+
+	//then
+	assert.Equal(suite.T(), "exception message can not be empty", err.Error())
+}
+
 func (suite *ExceptionServiceSuite) TestSaveException_ErrorWhileSending() {
 	//given
 	ctx := context.TODO()

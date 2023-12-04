@@ -7,19 +7,19 @@ import (
 	"time"
 )
 
-func NewErrorResponse(resp *fasthttp.Response) *model.ApplicationError {
+func NewErrorResponse(resp *fasthttp.Response, errorOwnerID string) *model.ApplicationError {
 	errorType := model.InternalError
-	errCode := model.StatusFailedErrorCode
+	errCode := string(model.StatusFailedErrorCode)
 	if resp.StatusCode() == 404 {
 		errorType = model.NotFoundError
-		errCode = model.NotFoundCode
+		errCode = fmt.Sprintf(string(model.NotFoundCode), errorOwnerID)
 	}
 
 	return &model.ApplicationError{
 		Type:    errorType,
 		Instant: time.Now().String(),
 		Code:    errCode,
-		Cause:   fmt.Sprintf("Http client status is not success. grafana:\n %s", resp.String()),
+		Cause:   fmt.Sprintf("%s Http client status is not success. Response:\n %s", errorOwnerID, resp.String()),
 	}
 }
 

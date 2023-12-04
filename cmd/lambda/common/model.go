@@ -38,7 +38,7 @@ func NewProxyErrorResponse(err error) ProxyResponse {
 			StatusCode: getStatusCode(appErr),
 			Body: ErrorBody{
 				Instant: appErr.Instant,
-				Code:    string(appErr.Code),
+				Code:    appErr.Code,
 				Cause:   appErr.Cause,
 			}.String(),
 		}
