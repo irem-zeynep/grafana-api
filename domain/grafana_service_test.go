@@ -9,21 +9,24 @@ import (
 	"grafana-api/domain"
 	"grafana-api/domain/model"
 	"grafana-api/infrastructure/http/grafana"
+	passwordMock "grafana-api/mocks/infrastructure/generator/password"
 	grafanaMock "grafana-api/mocks/infrastructure/http/grafana"
 	"testing"
 )
 
 type GrafanaServiceSuite struct {
 	suite.Suite
-	serv   domain.IGrafanaService
-	client *grafanaMock.IClient
-	logger *logrus.Logger
+	serv         domain.IGrafanaService
+	client       *grafanaMock.IClient
+	pwdGenerator *passwordMock.IPasswordGenerator
+	logger       *logrus.Logger
 }
 
 func (suite *GrafanaServiceSuite) SetupTest() {
 	suite.logger = logrus.New()
 	suite.client = grafanaMock.NewIClient(suite.T())
-	suite.serv = domain.NewGrafanaService(suite.client, suite.logger)
+	suite.pwdGenerator = passwordMock.NewIPasswordGenerator(suite.T())
+	suite.serv = domain.NewGrafanaService(suite.client, suite.pwdGenerator, suite.logger)
 }
 
 func (suite *GrafanaServiceSuite) TestSaveGrafana() {
@@ -37,7 +40,7 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana() {
 	cmd := grafana.CreateUserCommand{
 		Email:    "test user email",
 		Name:     "test user email",
-		Password: "pass",
+		Password: "pass123",
 		Login:    "test user email",
 		Role:     "Viewer",
 	}
@@ -48,8 +51,9 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana() {
 	}
 
 	suite.client.On("GetOrg", ctx, "test org name").Return(orgDto, nil)
-	suite.client.On("GetUser", ctx, "test user email").Return(nil, errors.New(string(model.NotFoundCode)))
+	suite.client.On("GetUser", ctx, "test user email").Return(nil, &model.ApplicationError{Type: model.NotFoundError})
 	suite.client.On("CreateUser", ctx, cmd).Return(nil)
+	suite.pwdGenerator.On("NewPassword", ctx).Return("pass123")
 
 	//when
 	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)
@@ -76,7 +80,7 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana_ErrorWhileCreatingNewUser() {
 	cmd := grafana.CreateUserCommand{
 		Email:    "test user email",
 		Name:     "test user email",
-		Password: "pass",
+		Password: "pass123",
 		Login:    "test user email",
 		Role:     "Viewer",
 	}
@@ -89,8 +93,9 @@ func (suite *GrafanaServiceSuite) TestSaveGrafana_ErrorWhileCreatingNewUser() {
 	expectedErr := errors.New("expected err")
 
 	suite.client.On("GetOrg", ctx, "test org name").Return(orgDto, nil)
-	suite.client.On("GetUser", ctx, "test user email").Return(nil, errors.New(string(model.NotFoundCode)))
+	suite.client.On("GetUser", ctx, "test user email").Return(nil, &model.ApplicationError{Type: model.NotFoundError})
 	suite.client.On("CreateUser", ctx, cmd).Return(expectedErr)
+	suite.pwdGenerator.On("NewPassword", ctx).Return("pass123")
 
 	//when
 	actualResp, err := suite.serv.CheckOrganizationUser(ctx, req)

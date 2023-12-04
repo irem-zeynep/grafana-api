@@ -7,6 +7,7 @@ import (
 	"grafana-api/cmd/lambda/check-organization-user/handler"
 	"grafana-api/domain"
 	"grafana-api/infrastructure/event/sns"
+	"grafana-api/infrastructure/generator/password"
 	"grafana-api/infrastructure/http/grafana"
 	"grafana-api/infrastructure/persistence/timestream"
 	"grafana-api/infrastructure/secretmanager"
@@ -26,7 +27,9 @@ func init() {
 
 	auditRepo := timestream.NewAuditRepository(secret.TimeStreamDB)
 
-	lambdaHandler.Serv = domain.NewGrafanaService(client, lambdaHandler.Logger)
+	passwordGenerator := password.NewPasswordGenerator()
+
+	lambdaHandler.Serv = domain.NewGrafanaService(client, passwordGenerator, lambdaHandler.Logger)
 	lambdaHandler.ExceptionServ = domain.NewExceptionService(publisher, lambdaHandler.Logger)
 	lambdaHandler.AuditServ = domain.NewAuditService(auditRepo, lambdaHandler.Logger)
 }

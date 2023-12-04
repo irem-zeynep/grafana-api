@@ -2,8 +2,10 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"github.com/sirupsen/logrus"
 	"grafana-api/domain/model"
+	"grafana-api/infrastructure/generator/password"
 	"grafana-api/infrastructure/http/grafana"
 )
 
@@ -12,14 +14,16 @@ type IGrafanaService interface {
 }
 
 type grafanaService struct {
-	client grafana.IClient
-	logger *logrus.Logger
+	client       grafana.IClient
+	pwdGenerator password.IPasswordGenerator
+	logger       *logrus.Logger
 }
 
-func NewGrafanaService(client grafana.IClient, logger *logrus.Logger) IGrafanaService {
+func NewGrafanaService(client grafana.IClient, pwdGenerator password.IPasswordGenerator, logger *logrus.Logger) IGrafanaService {
 	return &grafanaService{
-		client: client,
-		logger: logger,
+		client:       client,
+		pwdGenerator: pwdGenerator,
+		logger:       logger,
 	}
 }
 
@@ -40,7 +44,8 @@ func (s grafanaService) CheckOrganizationUser(ctx context.Context, req model.Che
 		return &model.CheckOrgUserDTO{NewUserCreated: false}, nil
 	}
 
-	if err.Error() != string(model.NotFoundCode) {
+	var appErr *model.ApplicationError
+	if !errors.As(err, &appErr) || appErr.Type != model.NotFoundError {
 		return nil, err
 	}
 
@@ -49,7 +54,7 @@ func (s grafanaService) CheckOrganizationUser(ctx context.Context, req model.Che
 		Email:    req.UserEmail,
 		Name:     req.UserEmail,
 		Login:    req.UserEmail,
-		Password: "pass",
+		Password: s.pwdGenerator.NewPassword(ctx),
 		Role:     "Viewer",
 	}
 	if err = s.client.CreateUser(ctx, userCmd); err != nil {
